@@ -1,24 +1,20 @@
 import streamlit as st
 import joblib
 import pandas as pd
-import numpy as np
-from sklearn.preprocessing import StandardScaler
 from pyswip import Prolog
 import random
 
 
-# **1. Caricamento dei modelli e scaler**
 best_classification_model = joblib.load("best_classification_model.pkl")
 best_regression_model = joblib.load("best_regression_model.pkl")
 scaler = joblib.load("scaler.pkl")
 scaler_weight = joblib.load("scaler_weight.pkl")
 le_obesity = joblib.load("obesity_encoder.pkl")
-model_features = joblib.load("model_features.pkl")  # Feature corrette dal training
+model_features = joblib.load("model_features.pkl") 
 
-# **2. Interfaccia Streamlit**
 st.title("Obesity Prediction System")
 
-# **3. Input utente**
+# Input utente
 gender = st.selectbox("Gender", ["Male", "Female"])
 age = st.number_input("Age", min_value=5, max_value=100, step=1)
 height = st.number_input("Height (m)", min_value=1.0, max_value=2.5, step=0.01)
@@ -77,9 +73,9 @@ def interroga_prolog(utente_id):
     except Exception as e:
         return f"Errore durante l'interrogazione di Prolog: {str(e)}"
     
-# **4. Predizione al click**
+
 if st.button("Predict"):
-    # **Creazione dataframe utente**
+
     sample = pd.DataFrame([{ 
         'Gender': gender,
         'Age': age,
@@ -100,40 +96,33 @@ if st.button("Predict"):
     }])
     utente_id = genera_fatti_prolog(sample)
     risultato_prolog = interroga_prolog(utente_id)
-    # **5. One-Hot Encoding**
+    
     sample = pd.get_dummies(sample)
 
-    # **6. Aggiunta delle feature mancanti con valore 0**
+
     for col in model_features:
         if col not in sample.columns:
             sample[col] = 0  
 
-    # **7. Rimozione delle feature extra**
     sample = sample[model_features]  
 
-    # **8. Verifica che il numero di colonne combaci**
+    # Verifica che il numero di colonne combaci
     if sample.shape[1] != len(model_features):
         st.error(f"Feature mismatch! Il modello si aspetta {len(model_features)} feature, ma ne ha ricevute {sample.shape[1]}")
         st.stop()
 
-    # **9. Riordinare le colonne per combaciare con quelle viste dallo `StandardScaler`**
+    #Riordinare le colonne per combaciare con quelle viste dallo `StandardScaler`**
     sample = sample[scaler.feature_names_in_]
 
-    # **10. Standardizzazione**
     sample_scaled = scaler.transform(sample)
 
-    # **11. Predizione Obesity**
     obesity_prediction = best_classification_model.predict(sample_scaled)[0]
     obesity_category = le_obesity.inverse_transform([obesity_prediction])[0]
-
-    # **12. Predizione del Peso**
     weight_prediction_scaled = best_regression_model.predict(sample_scaled).reshape(-1, 1)
 
-# **Correzione della denormalizzazione**
     weight_prediction = scaler_weight.inverse_transform(weight_prediction_scaled)
-    weight_prediction = float(weight_prediction[0, 0])  # Assicuriamoci che sia un singolo valore scalare
+    weight_prediction = float(weight_prediction[0, 0])
 
-    # **13. Output**
     st.subheader("Predicted Results")
     st.write(f"Predicted Obesity Class: {obesity_category}")
     st.write(f"Predicted Weight: {round(weight_prediction, 2)*100} kg")

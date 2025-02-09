@@ -1,28 +1,14 @@
-import numpy as np
+
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
 import joblib
-import sup
 from xgboost import XGBClassifier
 from sklearn.model_selection import train_test_split, cross_val_score, learning_curve, GridSearchCV, KFold, RepeatedKFold
-from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, RandomForestRegressor, GradientBoostingRegressor
-from sklearn.preprocessing import StandardScaler, LabelEncoder
-
-from sklearn.linear_model import Ridge
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, r2_score
-
 import numpy as np
-import matplotlib.pyplot as plt
 from sklearn.model_selection import learning_curve
-import numpy as np
-import pandas as pd
-import joblib
-import matplotlib.pyplot as plt
-from sklearn.model_selection import train_test_split, GridSearchCV, KFold, RepeatedKFold, learning_curve
+from sklearn.model_selection import GridSearchCV, KFold, RepeatedKFold
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, r2_score
 
 def plot_learning_curves(model, X_train, y_train, title, scoring):
     """ Genera e visualizza le curve di apprendimento. """
@@ -77,29 +63,26 @@ cv = RepeatedKFold(n_splits=5, n_repeats=5, random_state=42)
 # **6. Definizione dei modelli con GridSearchCV**
 classification_models = {
     'RandomForestClassifier': (RandomForestClassifier(random_state=42), {
-        'n_estimators': [50, 100, 150],
-        'max_depth': [5, 6, 7],
-        'min_samples_split': [9, 10],
-        'min_samples_leaf': [9, 10],
-        'bootstrap': [True]
+        'n_estimators': [800,850,900],
+        'max_depth': [4,5,6],
+        'min_samples_split': [9,10],
+        'min_samples_leaf': [9,10],
+        'bootstrap': [True],
+        'max_features': [1.0,1.5],
     }),
-    'GradientBoostingClassifier': (XGBClassifier(objective="multi:softmax", eval_metric="mlogloss", random_state=42), {
-        'n_estimators': [50, 100],
-        'learning_rate': [0.01, 0.05],
-        'max_depth': [5, 7],
-        'subsample': [0.7, 1.0],
-        'reg_alpha': [0.5, 1],
-        'reg_lambda': [0.5,1]
-    })
+    # 'GradientBoostingClassifier': (XGBClassifier(random_state=42), {
+    #     'n_estimators': [100,200,250],
+    #    'max_depth': [5,6],
+    #   'reg_lambda': [5,10]
+    # })
 }
 
 regression_models = {
     'RandomForestRegressor': (RandomForestRegressor(random_state=42), {
-        'n_estimators': [50, 100, 150],
+        'n_estimators': [100,200],
         'max_depth': [5, 6, 7],
         'min_samples_split': [9, 10],
         'min_samples_leaf': [9, 10],
-        'bootstrap': [True]
     })
 }
 
