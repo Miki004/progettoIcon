@@ -68,7 +68,7 @@ classification_models = {
         'min_samples_split': [9,10],
         'min_samples_leaf': [9,10],
         'bootstrap': [True],
-        'max_features': [1.0,1.5],
+        'max_features': [5],
     }),
     # 'GradientBoostingClassifier': (XGBClassifier(random_state=42), {
     #     'n_estimators': [100,200,250],

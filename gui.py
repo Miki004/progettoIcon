@@ -62,14 +62,18 @@ def interroga_prolog(utente_id):
         
         query_stile = f"malattia({utente_id}, cardiovascolare)."
         query_apnea = f"malattia({utente_id}, apnea_notturna)."
+        query_errori = f"errore({utente_id}, Messaggio)."
         
         risultato_stile = list(prolog.query(query_stile))
         risultato_apnea = list(prolog.query(query_apnea))
+        risultato_errori = list(prolog.query(query_errori))
         
         output_stile = "Soggetto a rischio di malattie cardiovascolari" if risultato_stile else "Soggetto non a rischio"
         output_apnea = "Il Soggetto potrebbe soffrire di apnea notturna" if risultato_apnea else "Sonno normale"
+        output_errori = "\n".join([f"Errore: {erro['Messaggio']}" for erro in risultato_errori]) if risultato_errori else "Nessun vincolo di integrità violato"
         
-        return f"{output_stile} | {output_apnea}"
+        
+        return f"{output_stile} | {output_apnea}| {output_errori}"
     except Exception as e:
         return f"Errore durante l'interrogazione di Prolog: {str(e)}"
     
