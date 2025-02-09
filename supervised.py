@@ -82,6 +82,14 @@ classification_models = {
         'min_samples_split': [9, 10],
         'min_samples_leaf': [9, 10],
         'bootstrap': [True]
+    }),
+    'GradientBoostingClassifier': (XGBClassifier(objective="multi:softmax", eval_metric="mlogloss", random_state=42), {
+        'n_estimators': [50, 100],
+        'learning_rate': [0.01, 0.05],
+        'max_depth': [5, 7],
+        'subsample': [0.7, 1.0],
+        'reg_alpha': [0.5, 1],
+        'reg_lambda': [0.5,1]
     })
 }
 

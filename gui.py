@@ -35,6 +35,7 @@ sleep = st.slider("Sleep time", 0.0, 12.0, step=0.1)
 tue = st.slider("Time Spent Using Technology (hours per day, 0-10)", 0.0, 10.0, step=0.1)
 calc = st.selectbox("Alcohol Consumption Frequency", ["Sometimes", "Frequently", "no"])
 mtrans = st.selectbox("Transportation Mode", ["Public_Transportation", "Automobile", "Walking", "Motorbike", "Bike"])
+
 def genera_fatti_prolog(sample):
     """ Genera fatti Prolog basati sulle scelte dell'utente """
     utente_id = f"p{random.randint(1,1000)}"
@@ -64,15 +65,15 @@ def interroga_prolog(utente_id):
         prolog.consult("kb.pl")
         
         query_stile = f"malattia({utente_id}, cardiovascolare)."
-        query_dieta = f"malattia({utente_id}, sindrome_metabolica)."
+        query_apnea = f"malattia({utente_id}, apnea_notturna)."
         
         risultato_stile = list(prolog.query(query_stile))
-        risultato_dieta = list(prolog.query(query_dieta))
+        risultato_apnea = list(prolog.query(query_apnea))
         
         output_stile = "Soggetto a rischio di malattie cardiovascolari" if risultato_stile else "Soggetto non a rischio"
-        output_dieta = "Soggetto a rischio di obesità, ipertensione e diabete" if risultato_dieta else "Dieta equilibrata"
+        output_apnea = "Il Soggetto potrebbe soffrire di apnea notturna" if risultato_apnea else "Sonno normale"
         
-        return f"{output_stile} | {output_dieta}"
+        return f"{output_stile} | {output_apnea}"
     except Exception as e:
         return f"Errore durante l'interrogazione di Prolog: {str(e)}"
     

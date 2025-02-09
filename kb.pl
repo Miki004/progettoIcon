@@ -723,3 +723,53 @@ beve(p87,poco).
 dorme(p87,molto).
 consumo_calorico(p87,alto).
 fumare(p87,si).
+persona(p203).
+eta_protetta(p203,si).
+sedentario(p203,si).
+vita_sociale(p203,si).
+tempo_social(p203, basso).
+pasti(p203,troppi).
+beve(p203,poco).
+dorme(p203,molto).
+consumo_calorico(p203,alto).
+fumare(p203,si).
+persona(p844).
+eta_protetta(p844,si).
+sedentario(p844,si).
+vita_sociale(p844,si).
+tempo_social(p844, basso).
+pasti(p844,troppi).
+beve(p844,poco).
+dorme(p844,molto).
+consumo_calorico(p844,alto).
+fumare(p844,si).
+persona(p937).
+eta_protetta(p937,si).
+sedentario(p937,no).
+vita_sociale(p937,no).
+tempo_social(p937, basso).
+pasti(p937,troppi).
+beve(p937,molto).
+dorme(p937,molto).
+consumo_calorico(p937,alto).
+fumare(p937,si).
+persona(p412).
+eta_protetta(p412,si).
+sedentario(p412,no).
+vita_sociale(p412,no).
+tempo_social(p412, basso).
+pasti(p412,troppi).
+beve(p412,molto).
+dorme(p412,molto).
+consumo_calorico(p412,alto).
+fumare(p412,si).
+persona(p492).
+eta_protetta(p492,si).
+sedentario(p492,si).
+vita_sociale(p492,si).
+tempo_social(p492, basso).
+pasti(p492,pochi).
+beve(p492,molto).
+dorme(p492,poco).
+consumo_calorico(p492,alto).
+fumare(p492,si).
