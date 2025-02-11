@@ -1043,3 +1043,13 @@ beve(p5065,molto).
 dorme(p5065,molto).
 consumo_calorico(p5065,alto).
 fumare(p5065,si).
+persona(p6505).
+eta_protetta(p6505,si).
+sedentario(p6505,si).
+vita_sociale(p6505,si).
+tempo_social(p6505,basso).
+pasti(p6505,troppi).
+beve(p6505,molto).
+dorme(p6505,molto).
+consumo_calorico(p6505,alto).
+fumare(p6505,si).
