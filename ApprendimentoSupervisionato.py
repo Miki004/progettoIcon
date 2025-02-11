@@ -12,7 +12,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, r2_score, mean_absolute_error, mean_squared_error, confusion_matrix, roc_auc_score
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor, GradientBoostingClassifier, GradientBoostingRegressor
-
+from sklearn.metrics import (precision_score, recall_score, f1_score, mean_squared_error, mean_absolute_error, r2_score,make_scorer)
 from sklearn.exceptions import UndefinedMetricWarning
 import warnings
 import numpy as np
@@ -21,163 +21,79 @@ from sklearn.metrics import precision_recall_fscore_support
 from sklearn.metrics import roc_curve, auc
 from itertools import cycle
 
-def plot_regression_metrics(model, X_test, y_test):
-    """Plotta le metriche MSE, MAE, R² come grafico a barre."""
-    y_pred = model.predict(X_test)
-
-    mse = mean_squared_error(y_test, y_pred)
-    mae = mean_absolute_error(y_test, y_pred)
-    r2 = r2_score(y_test, y_pred)
-
-    metrics = ["MSE", "MAE", "R²"]
-    values = [mse, mae, r2]
-
-    plt.figure(figsize=(8, 5))
-    plt.bar(metrics, values, color=["blue", "red", "green"])
-    plt.ylabel("Valore")
-    plt.title("Metriche di Regressione")
-    plt.grid(axis="y", linestyle="--", alpha=0.7)
-
-    # Annotazioni sulle barre
-    for i, v in enumerate(values):
-        plt.text(i, v + 0.01 * max(values), f"{v:.3f}", ha="center", fontsize=12)
-
-    plt.show()
-
-def plot_predicted_vs_actual(model, X_test, y_test):
-    """Plotta i valori predetti vs i valori reali."""
-    y_pred = model.predict(X_test)
-
-    plt.figure(figsize=(8, 6))
-    plt.scatter(y_test, y_pred, alpha=0.5, color="blue", label="Predetto vs Reale")
-    plt.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], color="red", linestyle="dashed", linewidth=2, label="Perfetta Predizione")
-    
-    plt.xlabel("Valori Reali")
-    plt.ylabel("Valori Predetti")
-    plt.title("Valori Predetti vs Reali")
-    plt.legend()
-    plt.grid()
-    plt.show()
-
-def plot_multiclass_roc(model, X_test, y_test, n_classes):
-    """Plotta la curva ROC per un problema di classificazione multi-classe."""
-    # Controlla se il modello ha il metodo predict_proba()
-    if not hasattr(model, "predict_proba"):
-        print("Il modello non supporta predict_proba(), impossibile disegnare la curva ROC.")
-        return
-    
-    y_score = model.predict_proba(X_test)  # Probabilità previste per ogni classe
-    
-    # Binarizziamo le etichette per il calcolo della curva ROC
-    from sklearn.preprocessing import label_binarize
-    y_test_binarized = label_binarize(y_test, classes=np.arange(n_classes))
-
-    # Calcoliamo ROC e AUC per ogni classe
-    fpr = dict()
-    tpr = dict()
-    roc_auc = dict()
-    for i in range(n_classes):
-        fpr[i], tpr[i], _ = roc_curve(y_test_binarized[:, i], y_score[:, i])
-        roc_auc[i] = auc(fpr[i], tpr[i])
-
-    # Plottiamo le curve ROC per ogni classe
-    plt.figure(figsize=(10, 6))
-    colors = cycle(["blue", "red", "green", "purple", "orange", "cyan"])  # Colori per le curve
-    
-    for i, color in zip(range(n_classes), colors):
-        plt.plot(fpr[i], tpr[i], color=color, lw=2,label=f"Classe {i} (AUC = {roc_auc[i]:.2f})")
-
-    plt.plot([0, 1], [0, 1], "k--", lw=2)  # Linea diagonale (random classifier)
-    plt.xlim([0.0, 1.0])
-    plt.ylim([0.0, 1.05])
-    plt.xlabel("False Positive Rate")
-    plt.ylabel("True Positive Rate")
-    plt.title("Curva ROC multi-classe")
-    plt.legend(loc="lower right")
-    plt.grid()
-    plt.show()
-
-def plot_classification_metrics(model, X_test, y_test, class_labels):
-    """Plotta un grafico a barre con Precision, Recall, F1-score per ogni classe."""
-    y_pred = model.predict(X_test)
-    
-    precision, recall, f1, _ = precision_recall_fscore_support(y_test, y_pred, average=None)
-
-    x = np.arange(len(class_labels))
-    width = 0.25  # Larghezza delle barre
-
-    plt.figure(figsize=(10, 6))
-    plt.bar(x - width, precision, width=width, label="Precision", color="blue")
-    plt.bar(x, recall, width=width, label="Recall", color="red")
-    plt.bar(x + width, f1, width=width, label="F1-score", color="green")
-
-    plt.xticks(x, class_labels, rotation=45)
-    plt.xlabel("Classi")
-    plt.ylabel("Valore")
-    plt.title("Metriche di Classificazione per Classe")
-    plt.legend()
-    plt.grid(axis="y", linestyle="--", alpha=0.7)
-    plt.show()
-
-def evaluate_classification_model(model, X_test, y_test):
-    """Calcola e stampa le metriche di classificazione."""
-    y_pred = model.predict(X_test)
-    
-    print("Accuracy:", accuracy_score(y_test, y_pred))
-    print("Precision:", precision_score(y_test, y_pred, average='weighted'))
-    print("Recall:", recall_score(y_test, y_pred, average='weighted'))
-    print("F1-score:", f1_score(y_test, y_pred, average='weighted'))
-    
-    # Verifica se il modello supporta predict_proba() o decision_function()
-    if hasattr(model, "predict_proba"):
-        y_prob = model.predict_proba(X_test)
-        try:
-            roc_auc = roc_auc_score(y_test, y_prob, multi_class='ovr')
-            print("ROC-AUC (OvR):", roc_auc)
-        except ValueError as e:
-            print(f"Errore nel calcolo ROC-AUC: {e}")
-    elif hasattr(model, "decision_function"):
-        y_scores = model.decision_function(X_test)
-        try:
-            roc_auc = roc_auc_score(y_test, y_scores, multi_class='ovr')
-            print("ROC-AUC (OvR):", roc_auc)
-        except ValueError as e:
-            print(f"Errore nel calcolo ROC-AUC: {e}")
-    else:
-        print("ROC-AUC non disponibile: il modello non supporta predict_proba() o decision_function().")
-
-
-def evaluate_regression_model(model, X_test, y_test):
-    """Calcola e stampa le metriche di regressione."""
-    y_pred = model.predict(X_test)
-    
-    print("MSE:", mean_squared_error(y_test, y_pred))
-    print("MAE:", mean_absolute_error(y_test, y_pred))
-    print("R2-score:", r2_score(y_test, y_pred))
-
-def plot_learning_curves(model, X_train, y_train, title, scoring):
-    """Genera e visualizza le curve di apprendimento."""
+def plot_learning_curves(model, X_train, y_train, title, scoring, cv=5):
+    """Genera e visualizza le curve di apprendimento con metriche aggiuntive."""
     plt.figure(figsize=(12, 6))
+    
     train_sizes, train_scores, test_scores = learning_curve(
-        model, X_train, y_train, cv=5, scoring=scoring, n_jobs=-1, train_sizes=np.linspace(0.1, 1.0, 10)
+        model, X_train, y_train, cv=cv, scoring=scoring,
+        n_jobs=-1, train_sizes=np.linspace(0.1, 1.0, 6)
     )
     
-    train_mean = np.mean(train_scores, axis=1)
-    train_var = np.var(train_scores, axis=1)
-    test_mean = np.mean(test_scores, axis=1)
-    test_var = np.var(test_scores, axis=1)
-
-    plt.plot(train_sizes, train_mean, label=f'{model.__class__.__name__} - Training', linestyle='--')
-    plt.fill_between(train_sizes, train_mean - train_var, train_mean + train_var, alpha=0.1)
-    plt.plot(train_sizes, test_mean, label=f'{model.__class__.__name__} - Validation')
-    plt.fill_between(train_sizes, test_mean - test_var, test_mean + test_var, alpha=0.1)
-
-    plt.title(title)
+    # Identifica se la metrica usata è da classificazione o regressione
+    is_classification = scoring in ["accuracy", "precision", "recall", "f1"]
+    
+    if is_classification:
+        # Per classificazione -> convertiamo accuracy in errore (1 - accuracy), ecc.
+        train_mean = 1 - np.mean(train_scores, axis=1)
+        test_mean = 1 - np.mean(test_scores, axis=1)
+        ylabel = "Error"
+    else:
+        # Per regressione -> plottiamo direttamente la metrica (es. MSE)
+        train_mean = np.mean(train_scores, axis=1)
+        test_mean = np.mean(test_scores, axis=1)
+        ylabel = scoring.upper()
+    
+    plt.plot(train_sizes, train_mean, label='Train', color='green')
+    plt.plot(train_sizes, test_mean, label='Test', color='red')
+    
+    plt.title(f'Learning Curve - {title}')
     plt.xlabel("Training Set Size")
-    plt.ylabel(scoring.capitalize())
+    plt.ylabel(ylabel)
     plt.legend()
     plt.grid()
     plt.show()
+    
+    # Metriche aggiuntive di classificazione
+    if is_classification:
+        metrics = {
+            "Precision": make_scorer(precision_score, average="weighted"),
+            "Recall": make_scorer(recall_score, average="weighted"),
+            "F1-score": make_scorer(f1_score, average="weighted"),
+        }
+        metric_values = {}
+        for metric_name, metric_func in metrics.items():
+            score = np.mean(cross_val_score(model, X_train, y_train, cv=cv, scoring=metric_func))
+            metric_values[metric_name] = score
+
+        plt.figure(figsize=(10, 5))
+        plt.bar(metric_values.keys(), metric_values.values(), color=["blue", "orange", "purple"])
+        plt.title("Metriche di Classificazione (CV)")
+        plt.ylabel("Score")
+        plt.grid(axis="y", linestyle="--", alpha=0.7)
+        plt.show()
+    else:
+        # Metriche aggiuntive di regressione
+        metrics = {
+            "MSE": make_scorer(mean_squared_error, greater_is_better=False),
+            "MAE": make_scorer(mean_absolute_error, greater_is_better=False),
+            "R²": make_scorer(r2_score)
+        }
+        metric_values = {}
+        
+        for metric_name, metric_func in metrics.items():
+            score = np.mean(cross_val_score(model, X_train, y_train, cv=cv, scoring=metric_func))
+            # Se la metrica è neg_mean_squared_error, la usiamo in valore assoluto
+            if "neg_" in metric_func._score_func.__name__:
+                score = abs(score)
+            metric_values[metric_name] = score
+        
+        plt.figure(figsize=(10, 5))
+        plt.bar(metric_values.keys(), metric_values.values(), color=["blue", "red", "green"])
+        plt.title("Metriche di Regressione (CV)")
+        plt.ylabel("Valore")
+        plt.grid(axis="y", linestyle="--", alpha=0.7)
+        plt.show()
 
 # Definizione della validazione incrociata con più suddivisioni
 cv = RepeatedKFold(n_splits=5, n_repeats=10, random_state=42)
@@ -276,10 +192,7 @@ for model_name, (model, params) in classification_models.items():
     if max(scores_cls) > best_score_cls:
         best_classification_model, best_score_cls = best_model, max(scores_cls)
 
-# Valutazione del miglior modello di classificazione
-evaluate_classification_model(best_classification_model, X_test_scaled, y_test_cls)
-plot_classification_metrics(best_classification_model, X_test_scaled, y_test_cls, class_labels)
-plot_multiclass_roc(best_classification_model, X_test_scaled, y_test_cls, n_classes)
+plot_learning_curves(best_classification_model,X_train_scaled,y_train_cls,title="Miglior Modello di Classificazione",scoring="accuracy",cv=cv)
 joblib.dump(best_classification_model, "best_classification_model.pkl")
 
 # GridSearch per la regressione
@@ -298,9 +211,7 @@ for model_name, (model, params) in regression_models.items():
         best_regression_model, best_score_reg = best_model, min(mse_scores)
 
 # Valutazione del miglior modello di regressione
-evaluate_regression_model(best_regression_model, X_test_scaled, y_test_reg)
-plot_predicted_vs_actual(best_regression_model, X_test_scaled, y_test_reg)
-plot_regression_metrics(best_regression_model, X_test_scaled, y_test_reg)
+plot_learning_curves(best_regression_model,X_train_scaled, y_train_reg.ravel(),title="Miglior Modello di Regressione",scoring="neg_mean_squared_error",cv=cv)
 
 joblib.dump(best_regression_model, "best_regression_model.pkl")
 
